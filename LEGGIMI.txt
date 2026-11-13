@@ -1,0 +1,30 @@
+RASSEGNA "OGGI IN ITALIA": PUBBLICAZIONE AUTOMATICA SUL SERVER
+==============================================================
+
+Ogni mattina verso le 6:35 (ora italiana) la redazione automatica scrive la rassegna
+del giorno nel repository pubblico GitHub maxser1/ite-oggi. Questo script la scarica
+da li' e la copia nel sito. Non servono chiavi o password: il repository e' pubblico.
+
+1. Da cPanel, Gestione file: crea la cartella  rassegna  nella home (allo stesso
+   livello di public_html, NON dentro) e caricaci  rassegna.sh.
+
+2. Cron job (cPanel > Cron Job). Un solo comando, ogni ora dalle 5 alle 11
+   (cosi' vale con qualunque fuso del server e con eventuali ritardi del generatore):
+
+   Minuto: 12   Ora: 5-11   Giorno: *   Mese: *   Giorno settimana: *
+   Comando:
+   sh $HOME/rassegna/rassegna.sh $HOME/public_html
+
+   Se il sito non sta in public_html ma in un'altra cartella (dominio aggiuntivo),
+   metti quel percorso al posto di $HOME/public_html.
+
+   Lo script, quando ha gia' pubblicato la rassegna del giorno, esce subito senza
+   fare niente: le esecuzioni in piu' non costano nulla e non riscrivono i file.
+
+3. Controllo: in  rassegna/rassegna.log  trovi una riga per ogni pubblicazione
+   ("pubblicata la rassegna del 2026-11-14") e, se lo script e' passato prima che
+   la rassegna fosse pronta, una riga "non ancora disponibile" (normale: riprova
+   l'ora dopo).
+
+Per una prova subito, dal Terminale di cPanel:
+   sh $HOME/rassegna/rassegna.sh $HOME/public_html ; cat $HOME/rassegna/rassegna.log
