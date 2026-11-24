@@ -1,0 +1,23 @@
+QUALITA' DELL'ARIA PER ITALYTRAVELESCAPE.COM (Copernicus CAMS), attivazione
+
+Cosa succede, una volta attivo:
+- ogni mattina alle 6:15 circa (ora italiana d'inverno) GitHub fa girare aria/aria_cams.py: scarica dal Copernicus
+  Atmosphere Data Store la previsione europea della qualita' dell'aria e scrive aria/oggi.json in questo repository;
+- lo script del server rassegna.sh (quello della rassegna, gia' nel cron) scarica aria/oggi.json nel sito;
+- la pagina "Qualita' dell'aria oggi" del sito legge quel file. Nessuna password FTP sta su GitHub.
+
+Da fare una volta sola (Max):
+1. Copernicus: entrare in https://ads.atmosphere.copernicus.eu con l'account ECMWF (lo stesso del clima ERA5),
+   aprire "CAMS European air quality forecasts", scheda Download, e accettare la licenza "CC-BY licence" in fondo.
+   La chiave personale si legge nella pagina https://ads.atmosphere.copernicus.eu/how-to-api (dopo l'accesso).
+2. GitHub, repository maxser1/ite-oggi: Settings > Secrets and variables > Actions > New repository secret.
+   Nome: ADS_KEY   Valore: la chiave personale. (Nessuno la vede, neanche Claude; non va mai scritta in un file.)
+3. GitHub, scheda Actions del repository: aprire "Qualita dell'aria (Copernicus CAMS)" e premere "Run workflow"
+   per la prima prova. Dopo qualche minuto deve comparire il file aria/oggi.json e un commit "Qualita' dell'aria ...".
+4. Server: sostituire rassegna.sh nella cartella del cron con la nuova versione, scaricandola da
+   https://raw.githubusercontent.com/maxser1/ite-oggi/main/rassegna.sh
+   (scaricarla da qui e non copiarla dal PC: il file del PC ha i ritorni a capo di Windows, che lo script del server non accetta).
+   Il cron resta quello di prima: non serve cambiarlo.
+5. Dirlo a Claude: pubblica la pagina dello strumento (oggi e' pronta ma tenuta fuori) e la collega dalla pagina Strumenti.
+
+Se un giorno Copernicus non risponde, il file del giorno prima resta al suo posto e la pagina avvisa che i dati non sono aggiornati.
