@@ -1,1 +1,46 @@
-C:\Users\stran\siti-web\ite-oggi\.github\workflows\aria.yml
+name: Qualita dell'aria (Copernicus CAMS)
+
+on:
+  schedule:
+    - cron: "15 5 * * *"
+  workflow_dispatch: {}
+
+permissions:
+  contents: write
+
+concurrency:
+  group: aria
+  cancel-in-progress: false
+
+jobs:
+  aria:
+    runs-on: ubuntu-latest
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Librerie
+        run: pip install cdsapi netCDF4 numpy
+      - name: Credenziali ADS (dal segreto, mai scritte nel repository)
+        env:
+          ADS_KEY: ${{ secrets.ADS_KEY }}
+        run: |
+          test -n "$ADS_KEY" || { echo "Manca il segreto ADS_KEY"; exit 1; }
+          printf 'url: https://ads.atmosphere.copernicus.eu/api\nkey: %s\n' "$ADS_KEY" > "$HOME/.adsapirc"
+      - name: Scarica e prepara i dati
+        env:
+          ARIA_PUNTI: aria/punti.json
+          ARIA_OUT: aria/oggi.json
+        run: |
+          export ADS_RC="$HOME/.adsapirc"
+          python -X utf8 aria/aria_cams.py
+      - name: Salva nel repository
+        run: |
+          git config user.name "aria-cams"
+          git config user.email "aria-cams@users.noreply.github.com"
+          git add aria/oggi.json
+          git diff --cached --quiet && { echo "nessuna novità"; exit 0; }
+          git commit -m "Qualità dell'aria $(date -u +%F)"
+          git push
